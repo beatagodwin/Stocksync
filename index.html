@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StockSync — Warehouse Stock Management</title>
+<style>
+:root{--navy:#08234d;--blue:#1261d6;--light:#f5f8fc;--line:#dfe6ef;--text:#152238;--muted:#6b778c;--green:#159447;--red:#d94141;--orange:#ed8a18}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--light);color:var(--text)}
+button,input,select{font:inherit}button{cursor:pointer;border:0}.app{display:flex;min-height:100vh}.side{width:225px;background:var(--navy);color:#fff;padding:20px 14px;position:fixed;inset:0 auto 0 0}.brand{font-size:22px;font-weight:800;padding:10px 12px 28px}.nav button{display:block;width:100%;text-align:left;background:transparent;color:#dce8fb;padding:13px 14px;border-radius:10px;margin:4px 0}.nav button.active,.nav button:hover{background:#1464d9;color:#fff}.main{margin-left:225px;width:calc(100% - 225px);padding:24px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}.top h1{margin:0 0 5px;font-size:28px}.muted{color:var(--muted);font-size:14px}.select{padding:10px 14px;border:1px solid var(--line);border-radius:9px;background:white}.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}.card{background:white;border:1px solid var(--line);border-radius:14px;padding:17px}.card .label{font-size:13px;color:var(--muted)}.card .value{font-size:25px;font-weight:800;margin-top:7px}.tabs{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap}.tab{padding:11px 15px;background:white;border:1px solid var(--line);border-radius:9px;color:#4d5b70}.tab.active{background:#eaf2ff;color:var(--blue);border-color:#a9c7f5;font-weight:700}.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:18px}.panel h2{font-size:18px;margin:0 0 14px}.form{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.field input,.field select{width:100%;padding:10px;border:1px solid #ccd6e3;border-radius:8px;background:#fff}.btn{padding:10px 14px;border-radius:8px;background:var(--blue);color:#fff;font-weight:700}.btn.green{background:var(--green)}.btn.gray{background:#eef2f7;color:#304057}.btn.red{background:#fff0f0;color:var(--red)}.actions{display:flex;gap:8px;align-items:end}.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:720px}.table th,.table td{padding:11px 10px;border-bottom:1px solid #edf0f5;text-align:left;font-size:13px}.table th{background:#f7f9fc;color:#516078}.stockin h3{color:var(--green)}.stockout h3{color:var(--orange)}.balance h3{color:var(--blue)}.badge{padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700}.badge.good{background:#e8f7ee;color:var(--green)}.badge.bad{background:#ffecec;color:var(--red)}.hidden{display:none!important}.empty{text-align:center;padding:30px;color:var(--muted)}.modal{position:fixed;inset:0;background:#0008;display:flex;align-items:center;justify-content:center;padding:20px;z-index:10}.modalbox{background:#fff;border-radius:16px;width:min(600px,100%);padding:22px}.modalhead{display:flex;justify-content:space-between;align-items:center}.modalhead h2{margin:0}.close{background:#eef2f7;border-radius:50%;width:34px;height:34px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}.notice{background:#edf5ff;border:1px solid #c9ddfa;padding:12px;border-radius:9px;color:#174f9e;margin-top:10px;font-size:13px}
+@media(max-width:900px){.side{width:70px}.brand{font-size:0}.brand:after{content:"📦";font-size:25px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:20px}.main{margin-left:70px;width:calc(100% - 70px)}.cards{grid-template-columns:repeat(2,1fr)}.form{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.main{padding:12px}.cards{grid-template-columns:1fr 1fr}.top h1{font-size:22px}.form{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.side{display:none}.main{margin-left:0;width:100%}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <div class="brand">📦 StockSync</div>
+  <div class="nav">
+    <button class="active" data-page="dashboard">🏠 Dashboard</button>
+    <button data-page="stock">📦 Stock</button>
+    <button data-page="invoices">🧾 Invoices</button>
+    <button data-page="transfer">↔️ Transfers</button>
+    <button data-page="reports">📊 Reports</button>
+  </div>
+</aside>
+<main class="main">
+<section id="dashboard">
+  <div class="top"><div><h1>Dashboard</h1><div class="muted">Warehouse 1 · <span id="today"></span></div></div><select class="select" id="warehouse"><option>Warehouse 1</option><option>Warehouse 2</option></select></div>
+  <div class="cards">
+    <div class="card"><div class="label">Stock Items</div><div class="value" id="kpiItems">0</div></div>
+    <div class="card"><div class="label">Total In</div><div class="value" id="kpiIn">0</div></div>
+    <div class="card"><div class="label">Total Out</div><div class="value" id="kpiOut">0</div></div>
+    <div class="card"><div class="label">Current Balance</div><div class="value" id="kpiBal">0</div></div>
+  </div>
+  <div class="panel"><h2>Inventory status</h2><div id="dashboardTable"></div></div>
+</section>
+
+<section id="stock" class="hidden">
+  <div class="top"><div><h1>Stock Balance</h1><div class="muted">Enter stock in/out and automatically calculate balance.</div></div><button class="btn green" onclick="exportCSV()">Export CSV</button></div>
+  <div class="tabs"><button class="tab active" onclick="showStockTab('in',this)">Stock In</button><button class="tab" onclick="showStockTab('out',this)">Stock Out</button><button class="tab" onclick="showStockTab('balance',this)">Stock Balance (Auto)</button><button class="tab" onclick="showStockTab('physical',this)">Physical Count</button></div>
+
+  <div id="stockInTab" class="panel stockin">
+    <h2>📥 Enter Stock In</h2>
+    <div class="form">
+      <div class="field"><label>Date</label><input type="date" id="inDate"></div>
+      <div class="field"><label>Invoice No.</label><input id="inInv" placeholder="155225"></div>
+      <div class="field"><label>Supplier / Invoice Name</label><input id="inName" placeholder="ONIYA DORATHY"></div>
+      <div class="field"><label>Stock Item</label><input id="inItem" placeholder="3CROWN 24*170G"></div>
+      <div class="field"><label>Quantity</label><input id="inQty" type="number" min="1" placeholder="150"></div>
+      <div class="actions"><button class="btn" onclick="addIn()">Add Stock In</button></div>
+    </div>
+    <div id="inTable" class="tablewrap" style="margin-top:18px"></div>
+  </div>
+
+  <div id="stockOutTab" class="panel stockout hidden">
+    <h2>📤 Enter Stock Out</h2>
+    <div class="form">
+      <div class="field"><label>Date</label><input type="date" id="outDate"></div>
+      <div class="field"><label>Invoice No.</label><input id="outInv" placeholder="155225"></div>
+      <div class="field"><label>Customer / Invoice Name</label><input id="outName" placeholder="SAHAD STORES CBD"></div>
+      <div class="field"><label>Stock Item</label><input id="outItem" placeholder="PEAK SAC 14G"></div>
+      <div class="field"><label>Quantity</label><input id="outQty" type="number" min="1" placeholder="100"></div>
+      <div class="actions"><button class="btn" onclick="addOut()">Add Stock Out</button></div>
+    </div>
+    <div id="outTable" class="tablewrap" style="margin-top:18px"></div>
+  </div>
+
+  <div id="balanceTab" class="panel balance hidden"><h2>📊 Automatic Stock Balance</h2><div id="balanceTable"></div><div class="notice">Balance = Opening Quantity + Total Stock In − Total Stock Out. Use Physical Count to record what you actually counted in the warehouse.</div></div>
+
+  <div id="physicalTab" class="panel hidden"><h2>🔎 Physical Count & Discrepancy</h2><div id="physicalTable"></div></div>
+</section>
+
+<section id="invoices" class="hidden"><div class="top"><div><h1>Invoices</h1><div class="muted">Track pending and supplied invoices.</div></div><button class="btn" onclick="openInvoice()">+ New Invoice</button></div><div class="panel"><div id="invoiceTable"></div></div></section>
+<section id="transfer" class="hidden"><div class="top"><div><h1>Inter-Warehouse Transfer</h1><div class="muted">Record movement between Warehouse 1 and Warehouse 2.</div></div><button class="btn" onclick="openTransfer()">+ New Transfer</button></div><div class="panel"><div id="transferTable"></div></div></section>
+<section id="reports" class="hidden"><div class="top"><div><h1>Reports</h1><div class="muted">Find stock discrepancies and movement history.</div></div></div><div class="panel"><h2>Discrepancies</h2><div id="reportTable"></div></div></section>
+</main></div>
+
+<div id="modal" class="modal hidden"><div class="modalbox" id="modalbox"></div></div>
+
+<script>
+const KEY='stocksync_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'null')||{
+in:[],out:[],physical:{},invoices:[],transfers:[],
+opening:{'3CROWN 24*170G':14,'3CROWN 320G RF':493,'3CROWN 750G RF':305,'3CROWN SAC 12G':221,'ADDMIE CHK CB*100':350,'ADDMIE BF CB*100':140,'BUTTERMINT':1,'B/VITA 380G RF':16,'CANDY COF':1}
+};
+function save(){localStorage.setItem(KEY,JSON.stringify(db));renderAll()}
+function fmt(n){return Number(n||0).toLocaleString()}
+function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function dateVal(id){return document.getElementById(id).value||new Date().toISOString().slice(0,10)}
+document.getElementById('today').textContent=new Date().toLocaleDateString('en-NG',{day:'2-digit',month:'short',year:'numeric'});
+['inDate','outDate'].forEach(id=>document.getElementById(id).value=new Date().toISOString().slice(0,10));
+
+function items(){return [...new Set([...Object.keys(db.opening),...db.in.map(x=>x.item),...db.out.map(x=>x.item)])].filter(Boolean)}
+function totals(item){let inn=db.in.filter(x=>x.item===item).reduce((a,x)=>a+Number(x.qty),0),out=db.out.filter(x=>x.item===item).reduce((a,x)=>a+Number(x.qty),0),op=Number(db.opening[item]||0);return {op,inn,out,bal:op+inn-out}}
+function addIn(){
+ let item=document.getElementById('inItem').value.trim(),qty=Number(document.getElementById('inQty').value);
+ if(!item||qty<=0)return alert('Enter a stock item and quantity.');
+ db.in.push({id:Date.now(),date:dateVal('inDate'),inv:document.getElementById('inInv').value.trim(),name:document.getElementById('inName').value.trim(),item,qty});save();['inInv','inName','inItem','inQty'].forEach(id=>document.getElementById(id).value='')
+}
+function addOut(){
+ let item=document.getElementById('outItem').value.trim(),qty=Number(document.getElementById('outQty').value);
+ if(!item||qty<=0)return alert('Enter a stock item and quantity.');
+ db.out.push({id:Date.now(),date:dateVal('outDate'),inv:document.getElementById('outInv').value.trim(),name:document.getElementById('outName').value.trim(),item,qty});save();['outInv','outName','outItem','outQty'].forEach(id=>document.getElementById(id).value='')
+}
+function del(type,id){if(confirm('Delete this entry?')){db[type]=db[type].filter(x=>x.id!==id);save()}}
+function showStockTab(which,btn){
+ document.querySelectorAll('#stock .tab').forEach(x=>x.classList.remove('active'));btn.classList.add('active');
+ ['stockInTab','stockOutTab','balanceTab','physicalTab'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+ document.getElementById(which==='in'?'stockInTab':which==='out'?'stockOutTab':which==='balance'?'balanceTab':'physicalTab').classList.remove('hidden')
+}
+function table(rows,heads){return '<table class="table"><thead><tr>'+heads.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
+function renderIn(){
+ let rows=db.in.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.inv)}</td><td>${esc(x.name)}</td><td>${esc(x.item)}</td><td>${fmt(x.qty)}</td><td><button class="btn red" onclick="del('in',${x.id})">Delete</button></td></tr>`);
+ document.getElementById('inTable').innerHTML=rows.length?table(rows,['Date','Invoice No.','Supplier','Stock Item','In Quantity','Action']):'<div class="empty">No stock-in entries yet.</div>'
+}
+function renderOut(){
+ let rows=db.out.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.inv)}</td><td>${esc(x.name)}</td><td>${esc(x.item)}</td><td>${fmt(x.qty)}</td><td><button class="btn red" onclick="del('out',${x.id})">Delete</button></td></tr>`);
+ document.getElementById('outTable').innerHTML=rows.length?table(rows,['Date','Invoice No.','Customer','Stock Item','Out Quantity','Action']):'<div class="empty">No stock-out entries yet.</div>'
+}
+function renderBalance(){
+ let rows=items().map((i,n)=>{let t=totals(i);return `<tr><td>${n+1}</td><td>${esc(i)}</td><td>${fmt(t.op)}</td><td>${fmt(t.inn)}</td><td>${fmt(t.out)}</td><td><b>${fmt(t.bal)}</b></td></tr>`});
+ document.getElementById('balanceTable').innerHTML=table(rows,['#','Stock Item','Opening Quantity','In Quantity','Out Quantity','Balance Quantity'])
+}
+function renderPhysical(){
+ let rows=items().map((i,n)=>{let t=totals(i),p=db.physical[i];let diff=p===undefined?'—':Number(p)-t.bal;return `<tr><td>${n+1}</td><td>${esc(i)}</td><td>${fmt(t.bal)}</td><td><input type="number" value="${p??''}" placeholder="Count" style="width:100px" onchange="setPhysical('${esc(i).replace(/'/g,"\\'")}',this.value)"></td><td>${p===undefined?'—':`<span class="badge ${diff===0?'good':'bad'}">${diff>0?'+':''}${fmt(diff)}</span>`}</td></tr>`});
+ document.getElementById('physicalTable').innerHTML=table(rows,['#','Stock Item','System Balance','Physical Count','Difference'])
+}
+function setPhysical(item,v){if(v==='')delete db.physical[item];else db.physical[item]=Number(v);save()}
+function renderDashboard(){
+ let its=items(), tin=db.in.reduce((a,x)=>a+Number(x.qty),0),tout=db.out.reduce((a,x)=>a+Number(x.qty),0),bal=its.reduce((a,i)=>a+totals(i).bal,0);
+ document.getElementById('kpiItems').textContent=its.length;document.getElementById('kpiIn').textContent=fmt(tin);document.getElementById('kpiOut').textContent=fmt(tout);document.getElementById('kpiBal').textContent=fmt(bal);
+ let rows=its.slice(0,12).map(i=>{let t=totals(i),p=db.physical[i],d=p===undefined?null:p-t.bal;return `<tr><td>${esc(i)}</td><td>${fmt(t.bal)}</td><td>${p===undefined?'Not counted':fmt(p)}</td><td>${d===null?'—':`<span class="badge ${d===0?'good':'bad'}">${d===0?'MATCH':(d>0?'+':'')+fmt(d)}</span>`}</td></tr>`});
+ document.getElementById('dashboardTable').innerHTML=table(rows,['Stock Item','System Balance','Physical Count','Status'])
+}
+function renderInvoices(){
+ let rows=db.invoices.map(x=>`<tr><td>${esc(x.inv)}</td><td>${esc(x.customer)}</td><td>${esc(x.date)}</td><td>${esc(x.status)}</td><td><button class="btn green" onclick="markInvoice(${x.id})">${x.status==='Pending'?'Mark Supplied':'Supplied'}</button></td></tr>`);
+ document.getElementById('invoiceTable').innerHTML=rows.length?table(rows,['Invoice No.','Customer','Date','Status','Action']):'<div class="empty">No invoices yet. Use “New Invoice”.</div>'
+}
+function openInvoice(){document.getElementById('modalbox').innerHTML=`<div class="modalhead"><h2>New Invoice</h2><button class="close" onclick="closeModal()">×</button></div><div class="grid2" style="margin-top:15px"><div class="field"><label>Invoice No.</label><input id="mInv"></div><div class="field"><label>Date</label><input id="mDate" type="date" value="${new Date().toISOString().slice(0,10)}"></div><div class="field full"><label>Customer</label><input id="mCustomer"></div><div class="field"><label>Status</label><select id="mStatus"><option>Pending</option><option>Supplied</option></select></div><div class="actions"><button class="btn" onclick="saveInvoice()">Save Invoice</button></div></div>`;document.getElementById('modal').classList.remove('hidden')}
+function saveInvoice(){let inv=document.getElementById('mInv').value.trim(),customer=document.getElementById('mCustomer').value.trim();if(!inv||!customer)return alert('Enter invoice number and customer.');db.invoices.push({id:Date.now(),inv,customer,date:document.getElementById('mDate').value,status:document.getElementById('mStatus').value});save();closeModal()}
+function markInvoice(id){let x=db.invoices.find(x=>x.id===id);if(x){x.status='Supplied';save()}}
+function openTransfer(){document.getElementById('modalbox').innerHTML=`<div class="modalhead"><h2>New Warehouse Transfer</h2><button class="close" onclick="closeModal()">×</button></div><div class="grid2" style="margin-top:15px"><div class="field"><label>From</label><select id="tFrom"><option>Warehouse 1</option><option>Warehouse 2</option></select></div><div class="field"><label>To</label><select id="tTo"><option>Warehouse 2</option><option>Warehouse 1</option></select></div><div class="field"><label>Stock Item</label><input id="tItem"></div><div class="field"><label>Quantity</label><input id="tQty" type="number" min="1"></div><div class="field full"><label>Reference / Note</label><input id="tNote" placeholder="e.g. Supply for invoice 155225"></div><div class="actions"><button class="btn" onclick="saveTransfer()">Create Transfer</button></div></div>`;document.getElementById('modal').classList.remove('hidden')}
+function saveTransfer(){let item=document.getElementById('tItem').value.trim(),qty=Number(document.getElementById('tQty').value);if(!item||qty<=0)return alert('Enter item and quantity.');db.transfers.push({id:Date.now(),from:document.getElementById('tFrom').value,to:document.getElementById('tTo').value,item,qty,note:document.getElementById('tNote').value,date:new Date().toISOString().slice(0,10)});save();closeModal()}
+function renderTransfers(){let rows=db.transfers.map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(x.from)}</td><td>${esc(x.to)}</td><td>${esc(x.item)}</td><td>${fmt(x.qty)}</td><td>${esc(x.note)}</td></tr>`);document.getElementById('transferTable').innerHTML=rows.length?table(rows,['Date','From','To','Stock Item','Quantity','Note']):'<div class="empty">No transfers yet.</div>'}
+function renderReports(){let rows=items().map(i=>{let t=totals(i),p=db.physical[i];if(p===undefined||p===t.bal)return '';return `<tr><td>${esc(i)}</td><td>${fmt(t.bal)}</td><td>${fmt(p)}</td><td><span class="badge bad">${p-t.bal>0?'+':''}${fmt(p-t.bal)}</span></td></tr>`}).filter(Boolean);document.getElementById('reportTable').innerHTML=rows.length?table(rows,['Stock Item','System Balance','Physical Count','Difference']):'<div class="empty">No recorded discrepancies. Count items in the Physical Count tab.</div>'}
+function closeModal(){document.getElementById('modal').classList.add('hidden')}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal()});
+function exportCSV(){let lines=[['Stock Item','Opening','Stock In','Stock Out','Balance'].join(',')];items().forEach(i=>{let t=totals(i);lines.push([`"${i.replace(/"/g,'""')}"`,t.op,t.inn,t.out,t.bal].join(','))});let blob=new Blob([lines.join('\n')],{type:'text/csv'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='stocksync-stock-balance.csv';a.click();URL.revokeObjectURL(a.href)}
+function renderAll(){renderIn();renderOut();renderBalance();renderPhysical();renderDashboard();renderInvoices();renderTransfers();renderReports()}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('main>section').forEach(s=>s.classList.add('hidden'));document.getElementById(b.dataset.page).classList.remove('hidden')});
+renderAll();
+</script>
+</body></html>
